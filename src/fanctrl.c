@@ -38,6 +38,7 @@ enum FanMode read_state() {
     if (NORMAL_MODE_EXPECTED_VALUE == -1) {
         // Set fan spinning mode to NORMAL to get NORMAL_MODE_EXPECTED_VALUE at the first run
         fan_control(NORMAL);
+        Sleep(50);
     }
     HANDLE hndl = CreateFileW(L"\\\\.\\EnergyDrv", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hndl == INVALID_HANDLE_VALUE) {
@@ -61,7 +62,7 @@ enum FanMode read_state() {
 void keep_fan_running() {
     is_keep_fan_speed_low = 0;
     is_keep_fan_running = 1;
-    const int interval = 9000; // ms, fine-tuned, see https://www.allstone.lt/ideafan/
+    const int interval = 8980; // ms, fine-tuned, see https://www.allstone.lt/ideafan/
     while (is_keep_fan_running) {
         while (read_state() != FAST) {
             fan_control(FAST);
@@ -80,7 +81,10 @@ void keep_fan_running() {
         if (interval - delta > 0) {
             Sleep(interval - delta);
         }
-        fan_control(NORMAL); // Reset the fan to NORMAL mode, than switch to FAST mode as soon as possible.
+        while (read_state() != NORMAL) {
+            fan_control(NORMAL); // Reset the fan to NORMAL mode
+            Sleep(10);
+        }
     }
     fan_control(NORMAL);
 }
