@@ -15,7 +15,7 @@
 
 #define WM_TRAYICON (WM_USER + 1)
 
-#define VERSION "v0.3"
+#define VERSION "v0.4"
 
 enum TrayMenuIDs {
     ID_TRAY_APP_ICON = 1001,
@@ -97,6 +97,12 @@ HMENU hMenu;
 pthread_t keep_fan_speed_low_thread;
 pthread_t keep_fan_running_thread;
 
+enum FanSpeed {
+    HIGH_SPEED,
+    LOW_SPEED,
+    NORMAL_SPEED
+} fan_speed_set_at_start = HIGH_SPEED;
+
 void* keep_fan_speed_low_func(void *arg) {
     keep_fan_speed_low();
 }
@@ -159,7 +165,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
             AppendMenu(hMenu, MF_STRING, ID_TRAY_EXIT, lang->menu_exit);
 
-            toggle_fan_high_speed();
+            switch (fan_speed_set_at_start) {
+                case LOW_SPEED:
+                    toggle_fan_low_speed();
+                    break;
+                case HIGH_SPEED:
+                    toggle_fan_high_speed();
+                    break;
+            }
             break;
         }
 
@@ -235,6 +248,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (PRIMARYLANGID(system_lang) == LANG_CHINESE) {
         lang = &zh_CN;
     }
+
+    int args;
+    LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &args);
+    for (int i = 1; i < args; ++i) {
+        if (wcscmp(argv[i], TEXT("--low-speed")) == 0) {
+            fan_speed_set_at_start = LOW_SPEED;
+        } else if (wcscmp(argv[i], TEXT("--normal-speed")) == 0) {
+            fan_speed_set_at_start = NORMAL_SPEED;
+        } else {
+            fan_speed_set_at_start = HIGH_SPEED;
+        }
+    }
+    LocalFree(argv);
 
     HANDLE hMutex = CreateMutex(NULL, TRUE, TEXT("LenovoFanControlMutex"));
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
