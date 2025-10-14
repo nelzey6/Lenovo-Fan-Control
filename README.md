@@ -36,6 +36,8 @@ You can click the `Low Speed` and `High Speed` item on the menu, or use the corr
 
 Finally, you can click the `Exit` item on the menu to terminate the program, then the fan will spin at normal speed.
 
+To select the start speed of the fan, you can run the program with command line parameter `--low-speed`, `--normal-speed` and `--high-speed`, which will set the fan to low speed, normal speed and high speed at start respectively. The default behavior is to set the fan to high speed if non of these parameters are given. For example, if you want to keep the fan spinning at low speed at start, you can run the command: `LenovoFanControl-x64.exe --low-speed`
+
 **Note:** Use the `Low Speed` mode with caution. Because this program does not have temperature monitoring, using the `Low Speed` mode can easily lead to high hardware temperatures, which can lead to hardware damage.
 
 # Theory
