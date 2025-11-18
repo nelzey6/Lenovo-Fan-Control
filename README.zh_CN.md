@@ -8,7 +8,9 @@ Language: [English](README.md)
 
 本项目是专为联想笔记本电脑准备的，尤其是那些风扇无法用主流风扇控制工具（如Notebook FanControl, SpeedFan, Fan Control）控制的电脑。
 
-但是，本项目并不是一个风扇控制的完美解决方案。本项目所使用的方法仅能实现控制风扇以最高转速运行，而无法控制风扇以其他特定的转速运行。
+但是，本项目并不是一个风扇控制的完美解决方案。本项目所使用的方法仅能实现控制风扇以最低、最高和正常转速运行，而无法控制风扇以其他特定的转速运行。
+
+本程序仅提供控制风扇这一简单功能，如果要实现温度监控、风扇曲线控制等等更复杂的功能，可以使用[FanControl](https://github.com/Rem0o/FanControl.Releases)程序，再安装上基于本项目开发的[FanControl.LenovoPlugin](https://github.com/jiarandiana0307/FanControl.LenovoPlugin)风扇控制插件，即可实现更强大的风扇控制功能。
 
 # 使用前提
 
@@ -59,8 +61,8 @@ Language: [English](README.md)
 # 参考资料
 
 - [IdeaFan][IdeaFan]
-- [FanControl][FanControl]
-- [Lenovo-IdeaPad-Z500-Fan-Controller][Lenovo-IdeaPad-Z500-Fan-Controller]
+- [bitrate16/FanControl][FanControl]
+- [Soberia/Lenovo-IdeaPad-Z500-Fan-Controller][Lenovo-IdeaPad-Z500-Fan-Controller]
 - [Windows Drivers Reverse Engineering Methodology][windows-drivers-reverse-engineering-methodology]
 
 [IdeaFan]: https://www.allstone.lt/ideafan/

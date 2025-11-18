@@ -8,7 +8,9 @@ Control fan for Lenovo laptops with `Lenovo ACPI-Compliant Virtual Power Control
 
 This project is for the Lenovo laptops whose fan failed to be controlled with mainstream fan control applications (e.g. Notebook FanControl, SpeedFan, Fan Control) on Windows.
 
-However, this project is not a perfect solution for fan control. It can only control the fan to spin at the maximum speed and dosen't provide any accurate speed control.
+However, this project is not a perfect solution for fan control. It can only control the fan to spin at the minimum speed, maximum speed and the normal speed, and dosen't provide any accurate speed control.
+
+This project has the only simple function of controlling fan. If you want more complex functions such as temperature monitoring, fan curves and so on, you can install [FanControl](https://github.com/Rem0o/FanControl.Releases), which is a powerful fan controlling program, and a plugin of it that is [FanControl.LenovoPlugin](https://github.com/jiarandiana0307/FanControl.LenovoPlugin) which is based on this project, to achieve powerful fan control features. 
 
 # Prerequisites
 
