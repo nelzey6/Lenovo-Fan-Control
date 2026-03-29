@@ -8,6 +8,8 @@
 #ifndef LENOVO_FAN_CONTROL_H
 #define LENOVO_FAN_CONTROL_H
 
+#include <Windows.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,6 +24,20 @@ volatile extern int is_keep_fan_running;
  * Set this variable to 0 to terminate keep_fan_speed_low()
  */
 volatile extern int is_keep_fan_speed_low;
+
+/**
+ * Timing configuration for keep_fan_running().
+ *
+ * cycle_ms: How long to keep the dust-removal procedure active before
+ *           resetting it back to normal mode.
+ * poll_ms:  How often to poll the driver while high speed mode is active.
+ *           If firmware stops the dust-removal procedure early, the app
+ *           immediately re-issues FAST mode on the next poll.
+ */
+typedef struct {
+    DWORD cycle_ms;
+    DWORD poll_ms;
+} KeepFanRunningConfig;
 
 /**
  * Possible fan spinning mode.
@@ -52,6 +68,11 @@ int fan_control(enum FanMode mode);
  *      FAST    Spin at maximum speed.
  */
 enum FanMode read_state();
+
+/**
+ * Configure timing for keep_fan_running().
+ */
+void set_keep_fan_running_config(KeepFanRunningConfig config);
 
 /**
  * Try to keep the fan in fast mode. 

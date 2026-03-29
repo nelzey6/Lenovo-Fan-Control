@@ -17,6 +17,7 @@ volatile int is_keep_fan_running = 0;
 volatile int is_keep_fan_speed_low = 0;
 
 static int NORMAL_MODE_EXPECTED_VALUE = -1;
+static KeepFanRunningConfig keep_fan_running_config = { 8980, 200 };
 
 int fan_control(enum FanMode mode) {
     HANDLE hndl = CreateFileW(L"\\\\.\\EnergyDrv", GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -59,28 +60,55 @@ enum FanMode read_state() {
     return outBuffer[0] == NORMAL_MODE_EXPECTED_VALUE ? NORMAL : FAST;
 }
 
+void set_keep_fan_running_config(KeepFanRunningConfig config) {
+    if (config.cycle_ms < 1000) {
+        config.cycle_ms = 1000;
+    }
+    if (config.poll_ms < 10) {
+        config.poll_ms = 10;
+    }
+    if (config.poll_ms > config.cycle_ms) {
+        config.poll_ms = config.cycle_ms;
+    }
+    keep_fan_running_config = config;
+}
+
 void keep_fan_running() {
     is_keep_fan_speed_low = 0;
     is_keep_fan_running = 1;
-    const int interval = 8980; // ms, fine-tuned, see https://www.allstone.lt/ideafan/
     while (is_keep_fan_running) {
         while (read_state() != FAST) {
             fan_control(FAST);
             Sleep(10);
         }
-        DWORD start = GetTickCount();
 
-        for (int i = 0; i < interval / 1000 - 1; ++i) {
-            Sleep(1000);
+        DWORD start = GetTickCount();
+        while (is_keep_fan_running) {
+            DWORD elapsed = GetTickCount() - start;
+            if (elapsed >= keep_fan_running_config.cycle_ms) {
+                break;
+            }
+
+            DWORD sleep_ms = keep_fan_running_config.poll_ms;
+            if (sleep_ms > keep_fan_running_config.cycle_ms - elapsed) {
+                sleep_ms = keep_fan_running_config.cycle_ms - elapsed;
+            }
+            Sleep(sleep_ms);
+
             if (!is_keep_fan_running) {
                 fan_control(NORMAL);
                 return;
             }
+
+            if (read_state() != FAST) {
+                // Lenovo's own controller can stop dust-removal early.
+                // Re-apply FAST mode immediately instead of waiting until
+                // the end of the cycle.
+                fan_control(FAST);
+                Sleep(10);
+            }
         }
-        int delta = GetTickCount() - start;
-        if (interval - delta > 0) {
-            Sleep(interval - delta);
-        }
+
         while (read_state() != NORMAL) {
             fan_control(NORMAL); // Reset the fan to NORMAL mode
             Sleep(10);

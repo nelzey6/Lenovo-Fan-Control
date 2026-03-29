@@ -40,6 +40,13 @@ Finally, you can click the `Exit` item on the menu to terminate the program, the
 
 To select the start speed of the fan, you can run the program with command line parameter `--low-speed`, `--normal-speed` and `--high-speed`, which will set the fan to low speed, normal speed and high speed at start respectively. The default behavior is to set the fan to high speed if non of these parameters are given. For example, if you want to keep the fan spinning at low speed at start, you can run the command: `LenovoFanControl-x64.exe --low-speed`
 
+If Lenovo firmware keeps overriding `High Speed` too early on your laptop, you can make the program re-check and re-apply the high-speed request more aggressively:
+
+- `--high-speed-cycle-ms <ms>`: how long to keep each high-speed dust-removal cycle active before resetting it back to normal and starting again. Default: `8980`
+- `--high-speed-poll-ms <ms>`: how often to poll the driver while high-speed mode is active and immediately re-apply high speed if Lenovo stops it early. Default: `200`
+
+Example: `LenovoFanControl-x64.exe --high-speed --high-speed-cycle-ms 7000 --high-speed-poll-ms 100`
+
 **Note:** Use the `Low Speed` mode with caution. Because this program does not have temperature monitoring, using the `Low Speed` mode can easily lead to high hardware temperatures, which can lead to hardware damage.
 
 # Theory
@@ -52,7 +59,9 @@ If you have `Lenovo ACPI-Compliant Virtual Power Controller` driver installed, t
 
 But there is a problem with this approach, the fan spins periodically. After we instruct the driver to carry out dust removal, the fan spins at maximum speed for about 9 seconds then stops for 2 seconds, and then the next cycle until 2min later. The dust removal is controlled automatically by EC itself, and sometimes may suddenly stop during the 9 seconds of spinning which leads to fan stop spinning for something for 1 to 9 seconds.
 
-For workaround about this problem, firstly, we ask the driver to carry out dust removal, wait for 9 seconds. Then we ask the driver to stop the procedure manually to reset the timing. Finally, we ask the driver to start over the procedure immediately before the fan stop spinning. And then wait for another 9 seconds, then stop, then the next cycle and so on. With the fast on and off switching, the fan won't stop and will spin at the maximum speed all the time except that the speed of the fan will slow down a little bit for a short period of time during the switching time.
+For workaround about this problem, firstly, we ask the driver to carry out dust removal, wait for about 9 seconds. Then we ask the driver to stop the procedure manually to reset the timing. Finally, we ask the driver to start over the procedure immediately before the fan stop spinning. And then wait for another cycle, then stop, then the next cycle and so on. With the fast on and off switching, the fan won't stop and will spin at the maximum speed all the time except that the speed of the fan will slow down a little bit for a short period of time during the switching time.
+
+On some laptops the EC or Lenovo firmware may still stop dust removal earlier than expected. In that case, the program can poll the driver state during the active part of the cycle and immediately re-apply the high-speed request instead of waiting until the end of the cycle.
 
 # Disclaimer
 

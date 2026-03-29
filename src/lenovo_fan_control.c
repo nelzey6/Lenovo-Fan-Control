@@ -6,6 +6,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <Windows.h>
 #include <tchar.h>
@@ -102,6 +103,20 @@ enum FanSpeed {
     LOW_SPEED,
     NORMAL_SPEED
 } fan_speed_set_at_start = HIGH_SPEED;
+
+KeepFanRunningConfig keep_fan_running_config = { 8980, 200 };
+
+static DWORD parse_dword_arg(LPCWSTR value, DWORD fallback) {
+    wchar_t *end = NULL;
+    unsigned long parsed = wcstoul(value, &end, 10);
+    if (value == end || *end != L'\0') {
+        return fallback;
+    }
+    if (parsed > 0xFFFFFFFFUL) {
+        return fallback;
+    }
+    return (DWORD)parsed;
+}
 
 void* keep_fan_speed_low_func(void *arg) {
     keep_fan_speed_low();
@@ -256,11 +271,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             fan_speed_set_at_start = LOW_SPEED;
         } else if (wcscmp(argv[i], TEXT("--normal-speed")) == 0) {
             fan_speed_set_at_start = NORMAL_SPEED;
-        } else {
+        } else if (wcscmp(argv[i], TEXT("--high-speed")) == 0) {
             fan_speed_set_at_start = HIGH_SPEED;
+        } else if (wcscmp(argv[i], TEXT("--high-speed-cycle-ms")) == 0 && i + 1 < args) {
+            keep_fan_running_config.cycle_ms = parse_dword_arg(argv[++i], keep_fan_running_config.cycle_ms);
+        } else if (wcscmp(argv[i], TEXT("--high-speed-poll-ms")) == 0 && i + 1 < args) {
+            keep_fan_running_config.poll_ms = parse_dword_arg(argv[++i], keep_fan_running_config.poll_ms);
         }
     }
     LocalFree(argv);
+
+    set_keep_fan_running_config(keep_fan_running_config);
 
     HANDLE hMutex = CreateMutex(NULL, TRUE, TEXT("LenovoFanControlMutex"));
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
